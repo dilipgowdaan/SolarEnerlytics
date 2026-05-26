@@ -8,7 +8,7 @@ The project integrates hardware sensors, ESP32 microcontroller, cloud/database s
 
 # 🌐 Live Demo
 
-🔗 [Open Solae Enerlytics](https:solarenerlytics.vercel.app)
+🔗 [Open Solar Enerlytics](https:solarenerlytics.vercel.app)
 
 ## 🚀 Features
 
@@ -199,10 +199,13 @@ ESP32 sends real-time sensor data to the backend server, which updates the live 
 
 ## 👨‍💻 Developed By
 
-### Solar Enerlytics Team
+# 👨‍💻 Team
 
-- Dilip Kumar A N
-- Arya B V
+## Dilip Kumar A N
+- Email: dilipkumaran.ec23@rvce.edu.in
+
+## Arya B V
+- Email: aryabv.ec23@rvce.edu.in
 
 ---
 
@@ -210,6 +213,4 @@ ESP32 sends real-time sensor data to the backend server, which updates the live 
 
 Developed and maintained by the Solar Enerlytics Team.
 
-All rights reserved.
-
-This project is intended for academic and educational purposes only.
+All rights reserved © 2026 Solar Enerlytics. This project is intended for academic and educational purposes only.
