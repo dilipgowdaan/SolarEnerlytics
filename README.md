@@ -75,6 +75,17 @@ Solar-Enerlytics/
 
 ---
 
+## 🛠️ ESP32 Code
+
+```bash
+Solar-Enerlytics/
+│
+└── src/
+    ├── hardware.ino
+```
+Upload the code by changing the WiFi SSID and Password to ESP32
+---
+
 ## ⚙️ System Working
 
 The system continuously monitors:
