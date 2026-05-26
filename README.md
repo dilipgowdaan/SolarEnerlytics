@@ -61,16 +61,16 @@ The project integrates hardware sensors, ESP32 microcontroller, cloud/database s
 ```bash
 Solar-Enerlytics/
 │
-├── app.py
-├── requirements.txt
+├── index.html
 ├── package.json
-├── vercel.json
-├── README.md
+├── postcss.config.js
+├── tailwind.config.js
+├── vite.config.js
 │
 └── src/
-    ├── index.html
-    ├── style.css
-    └── script.js
+    ├── index.css
+    ├── App.jsx
+    └── main.jsx
 ```
 
 ---
@@ -81,7 +81,7 @@ Solar-Enerlytics/
 Solar-Enerlytics/
 │
 └── src/
-    ├── hardware.ino
+    └── hardware.ino
 ```
 Upload the code by changing the WiFi SSID and Password to ESP32
 ---
@@ -125,37 +125,30 @@ The dashboard displays:
 
 ---
 
-## 🔧 Installation & Setup
+# ▶️ Installation & Running
 
-### 1️⃣ Clone Repository
+## Clone Repository
 
 ```bash
-git clone https://github.com/your-username/Solar-Enerlytics.git
-cd Solar-Enerlytics
+git clone https://github.com/dilipgowdaan/SolarEnerlytics.git
 ```
 
----
-
-### 2️⃣ Install Dependencies
+## Navigate to Project
 
 ```bash
-pip install -r requirements.txt
+cd SolarEnerlytics
 ```
 
----
-
-### 3️⃣ Run Flask Server
+## Install Dependencies
 
 ```bash
-python app.py
+npm install
 ```
 
----
-
-### 4️⃣ Open in Browser
+## Start Development Server
 
 ```bash
-http://127.0.0.1:5000
+npm run dev
 ```
 
 ---
