@@ -8,7 +8,7 @@ The project integrates hardware sensors, ESP32 microcontroller, cloud/database s
 
 # 🌐 Live Demo
 
-🔗 [Open Solar Enerlytics](https:solarenerlytics.vercel.app)
+🔗 [Open Vaidya Mithra](https://vaidya-mithra-app.vercel.app)
 
 ## 🚀 Features
 
