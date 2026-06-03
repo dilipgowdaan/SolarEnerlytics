@@ -215,6 +215,12 @@ const mapDbToState = (data) => ({
 const mapHistToState = (raw) => {
   const timeMs = parseInt(raw.id);
   const dateObj = new Date(timeMs);
+  const expVal = parseFloat(raw.gridExport) || 0;
+  
+  let statusStr = 'Not Used';
+  if (expVal < -0.1) statusStr = 'Exporting';
+  else if (expVal > 0.1) statusStr = 'Importing';
+
   return {
     id: timeMs,
     timestamp: dateObj.toLocaleString('en-IN', { 
@@ -229,7 +235,7 @@ const mapHistToState = (raw) => {
     solarP: (parseFloat(raw.solarP) || 0).toFixed(1),
     batteryPct: parseInt(raw.batteryPct) || 0,
     loadP: (parseFloat(raw.loadP) || 0).toFixed(1),
-    gridStatus: (parseFloat(raw.gridExport) || 0) < 0 ? 'Exporting' : 'Importing'
+    gridStatus: statusStr
   };
 };
 
@@ -1135,6 +1141,15 @@ const DashboardPage = () => {
 
   const chartData = getOneHourChartData();
 
+  const getGridStatusDetails = () => {
+    if (!liveData.grid.active) return { val: "Down", sub: "Isolated / Fault", color: "red" };
+    if (liveData.relays.r1 === true && liveData.relays.r2 === false) return { val: "Standby", sub: "Not Used (Isolated)", color: "slate" };
+    if (liveData.relays.r2 === true) return { val: "Active", sub: "Exporting to Grid", color: "emerald" };
+    if (liveData.relays.r1 === false) return { val: "Active", sub: "Importing from Grid", color: "blue" };
+    return { val: "Standby", sub: "Unknown", color: "slate" };
+  };
+  const gridStatus = getGridStatusDetails();
+
   return (
     <div className="space-y-6 pb-10">
       
@@ -1159,7 +1174,7 @@ const DashboardPage = () => {
         <KpiCard title="PV Array Output" value={`${liveData.solar.power.toFixed(1)} W`} sub={`${liveData.solar.voltage.toFixed(1)}V / ${liveData.solar.current.toFixed(1)}A`} icon={<Sun />} color="emerald" />
         <KpiCard title="Battery Storage" value={`${liveData.battery.percentage}%`} sub={`${liveData.battery.voltage.toFixed(1)}V • ${liveData.battery.temp.toFixed(1)}°C`} icon={<Battery />} color={liveData.battery.percentage > 20 ? "blue" : "red"} />
         <KpiCard title="Site Load" value={`${liveData.load.power.toFixed(1)} W`} sub="Live Consumption" icon={<Activity />} color="slate" />
-        <KpiCard title="Grid Status" value={liveData.grid.active ? "Active" : "Down"} sub={liveData.grid.active ? (liveData.grid.importExport < 0 ? "Exporting" : "Importing") : "Isolated"} icon={<ArrowRightLeft />} color={liveData.grid.active ? (liveData.grid.importExport < 0 ? "emerald" : "blue") : "red"} />
+        <KpiCard title="Grid Status" value={gridStatus.val} sub={gridStatus.sub} icon={<ArrowRightLeft />} color={gridStatus.color} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1571,7 +1586,7 @@ const HistoryPage = () => {
     filtered.forEach(h => {
        const bucketTime = Math.floor(h.id / bucketSizeMs) * bucketSizeMs;
        if (!buckets[bucketTime]) {
-          buckets[bucketTime] = { count: 0, solarV: 0, solarI: 0, solarP: 0, batteryPct: 0, loadP: 0, exportCount: 0 };
+          buckets[bucketTime] = { count: 0, solarV: 0, solarI: 0, solarP: 0, batteryPct: 0, loadP: 0, exportCount: 0, importCount: 0 };
        }
        buckets[bucketTime].count++;
        buckets[bucketTime].solarV += parseFloat(h.solarV);
@@ -1579,13 +1594,20 @@ const HistoryPage = () => {
        buckets[bucketTime].solarP += parseFloat(h.solarP);
        buckets[bucketTime].batteryPct += h.batteryPct;
        buckets[bucketTime].loadP += parseFloat(h.loadP);
+       
        if (h.gridStatus === 'Exporting') buckets[bucketTime].exportCount++;
+       else if (h.gridStatus === 'Importing') buckets[bucketTime].importCount++;
     });
 
     return Object.keys(buckets).map(timeMs => {
        const b = buckets[timeMs];
        const c = b.count;
        const d = new Date(parseInt(timeMs));
+       
+       let status = 'Not Used';
+       if (b.exportCount > b.importCount && b.exportCount > 0) status = 'Exporting';
+       else if (b.importCount > b.exportCount && b.importCount > 0) status = 'Importing';
+
        return {
           id: parseInt(timeMs),
           timestamp: d.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }),
@@ -1594,7 +1616,7 @@ const HistoryPage = () => {
           solarP: (b.solarP / c).toFixed(1),
           batteryPct: Math.round(b.batteryPct / c),
           loadP: (b.loadP / c).toFixed(1),
-          gridStatus: (b.exportCount / c) > 0.5 ? 'Exporting' : 'Importing'
+          gridStatus: status
        };
     }).sort((a,b) => b.id - a.id);
   };
@@ -1675,7 +1697,7 @@ const HistoryPage = () => {
                 </td>
                 <td className="px-5 py-4 text-slate-900 dark:text-slate-200 font-bold border-y border-transparent group-hover:border-slate-200/50 dark:group-hover:border-white/5 transition-colors">{row.loadP} W</td>
                 <td className="px-5 py-4 rounded-r-xl border-y border-r border-transparent group-hover:border-slate-200/50 dark:group-hover:border-white/5 transition-colors">
-                  <span className={`px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border shadow-sm ${row.gridStatus === 'Exporting' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-500/20' : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200/50 dark:border-orange-500/20'}`}>
+                  <span className={`px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border shadow-sm ${row.gridStatus === 'Exporting' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-500/20' : row.gridStatus === 'Importing' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200/50 dark:border-blue-500/20' : 'bg-slate-100 dark:bg-[#2A2A35] text-slate-500 dark:text-slate-400 border-slate-200/50 dark:border-[#3A3A45]'}`}>
                     {row.gridStatus}
                   </span>
                 </td>
